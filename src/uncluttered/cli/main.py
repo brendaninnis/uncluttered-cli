@@ -1,0 +1,116 @@
+"""Typer CLI application for Uncluttered Recipes."""
+
+from typing import Optional
+
+import typer
+
+from uncluttered.cli.display import console, print_search_results, print_recipe_detail
+from uncluttered.core.database import (
+    get_recipe_by_slug,
+    get_recipes_by_search_term,
+    delete_recipe_by_slug,
+    delete_recipes_by_search_term,
+    delete_all_recipes,
+)
+from uncluttered.core.engine import process_query
+
+app = typer.Typer(
+    name="uncluttered",
+    help="AI-powered recipe search and extraction. Cooking, clarified.",
+    add_completion=False,
+)
+
+
+@app.command()
+def search(
+    query: str = typer.Argument(..., help="Recipe search query"),
+    fetch: int = typer.Option(5, "--fetch", "-f", help="Number of recipes to fetch"),
+    display: int = typer.Option(3, "--display", "-d", help="Number of recipes to display"),
+):
+    """Search for recipes and save them to the database."""
+    with console.status("[bold green]Hunting for recipes...", spinner="dots"):
+        try:
+            recipes = process_query(query, fetch_count=fetch, display_count=display)
+        except Exception as e:
+            console.print(f"[bold red]Error:[/bold red] {e}")
+            raise typer.Exit(1)
+
+    console.print(f"[green]Saved {len(recipes)} recipes for \"{query}\"[/green]\n")
+    print_search_results(recipes, title=f"Top Results for \"{query}\"")
+
+
+@app.command("list")
+def list_recipes(
+    search_term: str = typer.Argument(..., help="Search term to filter recipes"),
+):
+    """List all saved recipes for a search term."""
+    recipes = get_recipes_by_search_term(search_term)
+
+    if not recipes:
+        console.print(f"[yellow]No recipes found for \"{search_term}\".[/yellow]")
+        console.print(f"Try: [bold]uncluttered search \"{search_term}\"[/bold]")
+        raise typer.Exit(0)
+
+    print_search_results(recipes, title=f"Recipes for \"{search_term}\"")
+
+
+@app.command()
+def show(slug: str = typer.Argument(..., help="Recipe slug to display")):
+    """Show details of a saved recipe by slug."""
+    recipe = get_recipe_by_slug(slug)
+
+    if recipe is None:
+        console.print(f"[bold red]Error:[/bold red] Recipe with slug \"{slug}\" not found.")
+        raise typer.Exit(1)
+
+    print_recipe_detail(recipe)
+
+
+@app.command()
+def delete(
+    slug: Optional[str] = typer.Argument(None, help="Recipe slug to delete"),
+    search_term: Optional[str] = typer.Option(
+        None, "--search-term", "-s", help="Delete all recipes for a search term"
+    ),
+    all_recipes: bool = typer.Option(
+        False, "--all", "-a", help="Delete all recipes"
+    ),
+):
+    """Delete recipes by slug, search term, or clear all."""
+    # Validate: exactly one option must be specified
+    options_set = sum([slug is not None, search_term is not None, all_recipes])
+    if options_set == 0:
+        console.print("[bold red]Error:[/bold red] Specify a slug, --search-term, or --all")
+        raise typer.Exit(1)
+    if options_set > 1:
+        console.print("[bold red]Error:[/bold red] Specify only one of: slug, --search-term, or --all")
+        raise typer.Exit(1)
+
+    # Delete by slug
+    if slug:
+        if delete_recipe_by_slug(slug):
+            console.print(f"[green]Deleted recipe: {slug}[/green]")
+        else:
+            console.print(f"[bold red]Error:[/bold red] Recipe with slug \"{slug}\" not found.")
+            raise typer.Exit(1)
+
+    # Delete by search term
+    elif search_term:
+        count = delete_recipes_by_search_term(search_term)
+        if count > 0:
+            console.print(f"[green]Deleted {count} recipe(s) for \"{search_term}\"[/green]")
+        else:
+            console.print(f"[yellow]No recipes found for \"{search_term}\".[/yellow]")
+
+    # Delete all
+    elif all_recipes:
+        confirm = typer.confirm("Are you sure you want to delete ALL recipes?")
+        if confirm:
+            count = delete_all_recipes()
+            console.print(f"[green]Deleted {count} recipe(s)[/green]")
+        else:
+            console.print("[dim]Cancelled.[/dim]")
+
+
+if __name__ == "__main__":
+    app()
