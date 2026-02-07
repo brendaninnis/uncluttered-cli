@@ -1,7 +1,7 @@
 """Pipeline orchestrator for recipe search and extraction."""
 
 from .agent import extract_recipe
-from .database import add_recipe, create_tables, get_all_slugs
+from .database import add_recipe, create_tables, get_all_slugs, get_saved_urls_by_search_term
 from .models import Recipe
 from .search import search_for_recipes
 from .utils import generate_slug, make_unique_slug
@@ -26,8 +26,9 @@ def process_query(
     # Ensure tables exist
     create_tables()
 
-    # Step 1: Search for multiple recipe sources
-    search_results = search_for_recipes(query, num_results=fetch_count)
+    # Step 1: Search for multiple recipe sources, excluding already-saved URLs
+    saved_urls = get_saved_urls_by_search_term(query.lower())
+    search_results = search_for_recipes(query, num_results=fetch_count, exclude_urls=saved_urls)
 
     if not search_results:
         raise ValueError(f"No search results found for: {query}")

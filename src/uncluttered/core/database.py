@@ -147,6 +147,18 @@ def get_recipes_by_search_term(search_term: str) -> list[Recipe]:
         return [_row_to_recipe(row) for row in rows]
 
 
+def get_saved_urls_by_search_term(search_term: str) -> list[str]:
+    """Get all source URLs for a given search term (case-insensitive)."""
+    with _get_session() as session:
+        rows = (
+            session.query(RecipeTable.source_url)
+            .filter(func.lower(RecipeTable.search_term) == search_term.lower())
+            .filter(RecipeTable.source_url.isnot(None))
+            .all()
+        )
+        return [row[0] for row in rows]
+
+
 def get_all_search_terms() -> list[str]:
     """Get all unique search terms from the database."""
     with _get_session() as session:

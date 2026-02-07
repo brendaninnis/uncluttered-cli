@@ -15,13 +15,18 @@ class SearchResult:
     content: str
 
 
-def search_for_recipes(query: str, num_results: int = 5) -> list[SearchResult]:
+def search_for_recipes(
+    query: str,
+    num_results: int = 5,
+    exclude_urls: list[str] | None = None,
+) -> list[SearchResult]:
     """
     Search for recipe sources using Tavily API.
 
     Args:
         query: The search query (e.g., "Best Carbonara recipe")
         num_results: Number of results to return (default 5)
+        exclude_urls: URLs to exclude from results (e.g., already-saved recipes)
 
     Returns:
         List of SearchResult objects with URL, title, and content.
@@ -33,10 +38,13 @@ def search_for_recipes(query: str, num_results: int = 5) -> list[SearchResult]:
         )
     client = TavilyClient(api_key=api_key)
 
+    excluded = set(exclude_urls) if exclude_urls else set()
+    max_results = min(num_results + len(excluded), 20)
+
     response = client.search(
         query=f"{query} recipe ingredients instructions",
         search_depth="advanced",
-        max_results=num_results,
+        max_results=max_results,
         include_raw_content=True,
     )
 
@@ -50,7 +58,7 @@ def search_for_recipes(query: str, num_results: int = 5) -> list[SearchResult]:
         # Prefer raw_content if available
         text = raw_content if raw_content else content
 
-        if text and url:
+        if text and url and url not in excluded:
             results.append(SearchResult(url=url, title=title, content=text))
 
-    return results
+    return results[:num_results]
