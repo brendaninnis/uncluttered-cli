@@ -1,25 +1,29 @@
 """Typer CLI application for Uncluttered Recipes."""
 
-from typing import Optional
+from dotenv import load_dotenv
 
-import typer
+load_dotenv()
 
-from uncluttered.cli.display import (
+from typing import Optional  # noqa: E402
+
+import typer  # noqa: E402
+
+from uncluttered.cli.display import (  # noqa: E402
     console,
-    print_search_results,
     print_recipe_detail,
+    print_search_results,
     print_search_terms,
     prompt_selection,
 )
-from uncluttered.core.database import (
+from uncluttered.core.database import (  # noqa: E402
+    delete_all_recipes,
+    delete_recipe_by_slug,
+    delete_recipes_by_search_term,
     get_recipe_by_slug,
     get_recipes_by_search_term,
     get_search_term_counts,
-    delete_recipe_by_slug,
-    delete_recipes_by_search_term,
-    delete_all_recipes,
 )
-from uncluttered.core.engine import process_query
+from uncluttered.core.engine import process_query  # noqa: E402
 
 app = typer.Typer(
     name="uncluttered",
@@ -42,8 +46,8 @@ def search(
             console.print(f"[bold red]Error:[/bold red] {e}")
             raise typer.Exit(1)
 
-    console.print(f"[green]Saved {len(recipes)} recipes for \"{query}\"[/green]\n")
-    print_search_results(recipes, title=f"Top Results for \"{query}\"")
+    console.print(f'[green]Saved {len(recipes)} recipes for "{query}"[/green]\n')
+    print_search_results(recipes, title=f'Top Results for "{query}"')
 
     choice = prompt_selection(len(recipes))
     if choice is not None:
@@ -73,11 +77,11 @@ def list_recipes(
     recipes = get_recipes_by_search_term(search_term)
 
     if not recipes:
-        console.print(f"[yellow]No recipes found for \"{search_term}\".[/yellow]")
-        console.print(f"Try: [bold]uncluttered search \"{search_term}\"[/bold]")
+        console.print(f'[yellow]No recipes found for "{search_term}".[/yellow]')
+        console.print(f'Try: [bold]uncluttered search "{search_term}"[/bold]')
         raise typer.Exit(0)
 
-    print_search_results(recipes, title=f"Recipes for \"{search_term}\"")
+    print_search_results(recipes, title=f'Recipes for "{search_term}"')
 
     choice = prompt_selection(len(recipes))
     if choice is not None:
@@ -90,7 +94,7 @@ def show(slug: str = typer.Argument(..., help="Recipe slug to display")):
     recipe = get_recipe_by_slug(slug)
 
     if recipe is None:
-        console.print(f"[bold red]Error:[/bold red] Recipe with slug \"{slug}\" not found.")
+        console.print(f'[bold red]Error:[/bold red] Recipe with slug "{slug}" not found.')
         raise typer.Exit(1)
 
     print_recipe_detail(recipe)
@@ -102,9 +106,7 @@ def delete(
     search_term: Optional[str] = typer.Option(
         None, "--search-term", "-s", help="Delete all recipes for a search term"
     ),
-    all_recipes: bool = typer.Option(
-        False, "--all", "-a", help="Delete all recipes"
-    ),
+    all_recipes: bool = typer.Option(False, "--all", "-a", help="Delete all recipes"),
 ):
     """Delete recipes by slug, search term, or clear all."""
     # Validate: exactly one option must be specified
@@ -113,7 +115,9 @@ def delete(
         console.print("[bold red]Error:[/bold red] Specify a slug, --search-term, or --all")
         raise typer.Exit(1)
     if options_set > 1:
-        console.print("[bold red]Error:[/bold red] Specify only one of: slug, --search-term, or --all")
+        console.print(
+            "[bold red]Error:[/bold red] Specify only one of: slug, --search-term, or --all"
+        )
         raise typer.Exit(1)
 
     # Delete by slug
@@ -121,16 +125,16 @@ def delete(
         if delete_recipe_by_slug(slug):
             console.print(f"[green]Deleted recipe: {slug}[/green]")
         else:
-            console.print(f"[bold red]Error:[/bold red] Recipe with slug \"{slug}\" not found.")
+            console.print(f'[bold red]Error:[/bold red] Recipe with slug "{slug}" not found.')
             raise typer.Exit(1)
 
     # Delete by search term
     elif search_term:
         count = delete_recipes_by_search_term(search_term)
         if count > 0:
-            console.print(f"[green]Deleted {count} recipe(s) for \"{search_term}\"[/green]")
+            console.print(f'[green]Deleted {count} recipe(s) for "{search_term}"[/green]')
         else:
-            console.print(f"[yellow]No recipes found for \"{search_term}\".[/yellow]")
+            console.print(f'[yellow]No recipes found for "{search_term}".[/yellow]')
 
     # Delete all
     elif all_recipes:

@@ -1,9 +1,9 @@
 """Pipeline orchestrator for recipe search and extraction."""
 
-from .search import search_for_recipes
 from .agent import extract_recipe
 from .database import add_recipe, create_tables, get_all_slugs
 from .models import Recipe
+from .search import search_for_recipes
 from .utils import generate_slug, make_unique_slug
 
 
@@ -37,14 +37,11 @@ def process_query(
 
     # Step 2: Extract recipes from each source
     recipes: list[Recipe] = []
+    errors: list[str] = []
     for result in search_results:
         try:
             # Build context from search result
-            context = (
-                f"--- Source: {result.url} ---\n"
-                f"Title: {result.title}\n\n"
-                f"{result.content}\n"
-            )
+            context = f"--- Source: {result.url} ---\nTitle: {result.title}\n\n{result.content}\n"
 
             # Extract structured recipe
             recipe = extract_recipe(context)
@@ -63,12 +60,13 @@ def process_query(
             saved_recipe = add_recipe(recipe)
             recipes.append(saved_recipe)
 
-        except Exception:
-            # Skip failed extractions, continue with others
+        except Exception as e:
+            errors.append(f"{result.url}: {e}")
             continue
 
     if not recipes:
-        raise ValueError(f"Failed to extract any recipes for: {query}")
+        error_detail = "; ".join(errors[:3])
+        raise ValueError(f"Failed to extract any recipes for: {query} ({error_detail})")
 
     # Step 3: Sort by trust score and return top N for display
     recipes.sort(

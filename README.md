@@ -10,6 +10,15 @@ AI-powered recipe extraction for the terminal. Type a search query, get clean in
 pip install uncluttered
 ```
 
+By default, only the Gemini provider is included. To use other LLM providers:
+
+```bash
+pip install "uncluttered[openai]"      # For OpenAI
+pip install "uncluttered[anthropic]"   # For Anthropic Claude
+pip install "uncluttered[ollama]"      # For Ollama (local)
+pip install "uncluttered[all]"         # All providers
+```
+
 Or install from source:
 
 ```bash
@@ -20,10 +29,14 @@ pip install -e .
 
 ## Setup
 
-You'll need API keys from two services (both have free tiers):
+You'll need API keys for a search provider and an LLM provider:
 
-1. **Gemini** (AI extraction): https://aistudio.google.com/apikey
-2. **Tavily** (recipe search): https://tavily.com
+1. **LLM** (AI extraction) — choose one:
+   - **Gemini** (default): https://aistudio.google.com/apikey
+   - **OpenAI**: https://platform.openai.com/api-keys
+   - **Anthropic**: https://console.anthropic.com/settings/keys
+   - **Ollama**: https://ollama.com (runs locally, no API key needed)
+2. **Tavily** (recipe search): https://tavily.com (free tier available)
 
 Create a `.env` file in your working directory:
 ```shell
@@ -32,7 +45,17 @@ cp .env.example .env
 
 Then use a text editor to update the file with your keys:
 ```
+# Choose your LLM provider (default: gemini)
+LLM_PROVIDER=gemini
+
+# Only the key for your chosen provider is required:
 GEMINI_API_KEY=your-gemini-key
+# OPENAI_API_KEY=your-openai-key
+# ANTHROPIC_API_KEY=your-anthropic-key
+
+# For Ollama: no API key needed, just set LLM_PROVIDER=ollama and LLM_MODEL
+# LLM_MODEL=llama3.1
+
 TAVILY_API_KEY=your-tavily-key
 ```
 
@@ -91,7 +114,7 @@ Recipes are sorted by trust score, so the best ones appear first.
 
 ## Data Storage
 
-Recipes are saved locally in `uncluttered.db` (SQLite) in your working directory.
+Recipes are saved locally in `~/.local/share/uncluttered/uncluttered.db` (SQLite).
 
 ## License
 

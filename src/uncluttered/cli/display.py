@@ -3,9 +3,9 @@
 import sys
 
 from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
 from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.table import Table
 
 from uncluttered.core.models import Recipe
 
@@ -57,15 +57,11 @@ def print_recipe_detail(recipe: Recipe) -> None:
     """Render a detailed recipe view."""
     # Build ingredients list
     ingredients_md = "\n".join(
-        f"- {ing.quantity} {ing.unit or ''} {ing.name}".strip()
-        for ing in recipe.ingredients
+        f"- {ing.quantity} {ing.unit or ''} {ing.name}".strip() for ing in recipe.ingredients
     )
 
     # Build instructions list
-    instructions_md = "\n".join(
-        f"{i}. {step}"
-        for i, step in enumerate(recipe.instructions, 1)
-    )
+    instructions_md = "\n".join(f"{i}. {step}" for i, step in enumerate(recipe.instructions, 1))
 
     # Build metadata line
     meta_parts = []
@@ -81,7 +77,8 @@ def print_recipe_detail(recipe: Recipe) -> None:
     score_section = ""
     if recipe.trust_score:
         score = recipe.trust_score.score
-        score_section = f"\n\n---\n\n**Trust Score:** {score}/100\n\n_{recipe.trust_score.reasoning}_"
+        reasoning = recipe.trust_score.reasoning
+        score_section = f"\n\n---\n\n**Trust Score:** {score}/100\n\n_{reasoning}_"
 
     # Source
     source_section = ""

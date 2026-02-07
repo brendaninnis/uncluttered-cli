@@ -3,21 +3,43 @@
 import json
 from pathlib import Path
 
-from sqlalchemy import create_engine, Column, Integer, String, Text, func
+from sqlalchemy import Column, Integer, String, Text, create_engine, func
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-from .models import Recipe, Ingredient, TrustScore
+from .models import Ingredient, Recipe, TrustScore
 
-
-# Database setup
-DB_PATH = Path(__file__).parent.parent.parent.parent / "uncluttered.db"
-engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
-SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
+
+_engine = None
+_SessionLocal = None
+
+
+def _get_db_path() -> Path:
+    """Return the path to the SQLite database file, creating parent dirs if needed."""
+    db_path = Path.home() / ".local" / "share" / "uncluttered" / "uncluttered.db"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    return db_path
+
+
+def _get_engine():
+    """Return a lazily-initialized SQLAlchemy engine."""
+    global _engine
+    if _engine is None:
+        _engine = create_engine(f"sqlite:///{_get_db_path()}", echo=False)
+    return _engine
+
+
+def _get_session():
+    """Return a new session from the lazily-initialized sessionmaker."""
+    global _SessionLocal
+    if _SessionLocal is None:
+        _SessionLocal = sessionmaker(bind=_get_engine())
+    return _SessionLocal()
 
 
 class RecipeTable(Base):
     """SQLAlchemy table for recipes."""
+
     __tablename__ = "recipes"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -37,12 +59,12 @@ class RecipeTable(Base):
 
 def create_tables() -> None:
     """Create all database tables."""
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(_get_engine())
 
 
 def add_recipe(recipe: Recipe) -> Recipe:
     """Save a recipe to the database and return it with its ID."""
-    with SessionLocal() as session:
+    with _get_session() as session:
         db_recipe = RecipeTable(
             title=recipe.title,
             description=recipe.description,
@@ -67,7 +89,7 @@ def add_recipe(recipe: Recipe) -> Recipe:
 
 def get_recipe(recipe_id: int) -> Recipe | None:
     """Retrieve a recipe by ID."""
-    with SessionLocal() as session:
+    with _get_session() as session:
         db_recipe = session.query(RecipeTable).filter(RecipeTable.id == recipe_id).first()
         if db_recipe is None:
             return None
@@ -76,7 +98,7 @@ def get_recipe(recipe_id: int) -> Recipe | None:
 
 def get_all_recipes() -> list[Recipe]:
     """Retrieve all recipes from the database."""
-    with SessionLocal() as session:
+    with _get_session() as session:
         rows = session.query(RecipeTable).order_by(RecipeTable.id.desc()).all()
         return [_row_to_recipe(row) for row in rows]
 
@@ -106,7 +128,7 @@ def _row_to_recipe(row: RecipeTable) -> Recipe:
 
 def get_recipe_by_slug(slug: str) -> Recipe | None:
     """Retrieve a recipe by its slug."""
-    with SessionLocal() as session:
+    with _get_session() as session:
         db_recipe = session.query(RecipeTable).filter(RecipeTable.slug == slug).first()
         if db_recipe is None:
             return None
@@ -115,42 +137,48 @@ def get_recipe_by_slug(slug: str) -> Recipe | None:
 
 def get_recipes_by_search_term(search_term: str) -> list[Recipe]:
     """Retrieve all recipes for a given search term (case-insensitive)."""
-    with SessionLocal() as session:
-        rows = session.query(RecipeTable).filter(
-            func.lower(RecipeTable.search_term) == search_term.lower()
-        ).order_by(RecipeTable.trust_score.desc()).all()
+    with _get_session() as session:
+        rows = (
+            session.query(RecipeTable)
+            .filter(func.lower(RecipeTable.search_term) == search_term.lower())
+            .order_by(RecipeTable.trust_score.desc())
+            .all()
+        )
         return [_row_to_recipe(row) for row in rows]
 
 
 def get_all_search_terms() -> list[str]:
     """Get all unique search terms from the database."""
-    with SessionLocal() as session:
+    with _get_session() as session:
         rows = session.query(RecipeTable.search_term).distinct().all()
         return [row[0] for row in rows if row[0] is not None]
 
 
 def get_search_term_counts() -> list[tuple[str, int]]:
     """Get all search terms with recipe counts."""
-    with SessionLocal() as session:
-        rows = session.query(
-            RecipeTable.search_term,
-            func.count(RecipeTable.id),
-        ).filter(
-            RecipeTable.search_term.isnot(None)
-        ).group_by(RecipeTable.search_term).all()
+    with _get_session() as session:
+        rows = (
+            session.query(
+                RecipeTable.search_term,
+                func.count(RecipeTable.id),
+            )
+            .filter(RecipeTable.search_term.isnot(None))
+            .group_by(RecipeTable.search_term)
+            .all()
+        )
         return [(row[0], row[1]) for row in rows]
 
 
 def get_all_slugs() -> set[str]:
     """Get all existing slugs from the database."""
-    with SessionLocal() as session:
+    with _get_session() as session:
         rows = session.query(RecipeTable.slug).all()
         return {row[0] for row in rows if row[0] is not None}
 
 
 def delete_recipe_by_slug(slug: str) -> bool:
     """Delete a recipe by its slug. Returns True if deleted, False if not found."""
-    with SessionLocal() as session:
+    with _get_session() as session:
         result = session.query(RecipeTable).filter(RecipeTable.slug == slug).delete()
         session.commit()
         return result > 0
@@ -158,17 +186,19 @@ def delete_recipe_by_slug(slug: str) -> bool:
 
 def delete_recipes_by_search_term(search_term: str) -> int:
     """Delete all recipes for a search term (case-insensitive). Returns count of deleted recipes."""
-    with SessionLocal() as session:
-        result = session.query(RecipeTable).filter(
-            func.lower(RecipeTable.search_term) == search_term.lower()
-        ).delete()
+    with _get_session() as session:
+        result = (
+            session.query(RecipeTable)
+            .filter(func.lower(RecipeTable.search_term) == search_term.lower())
+            .delete()
+        )
         session.commit()
         return result
 
 
 def delete_all_recipes() -> int:
     """Delete all recipes from the database. Returns count of deleted recipes."""
-    with SessionLocal() as session:
+    with _get_session() as session:
         result = session.query(RecipeTable).delete()
         session.commit()
         return result

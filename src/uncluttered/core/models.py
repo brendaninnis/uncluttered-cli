@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 class Ingredient(BaseModel):
     """A single ingredient with quantity and unit."""
+
     name: str
     quantity: str
     unit: str | None = None
@@ -12,12 +13,14 @@ class Ingredient(BaseModel):
 
 class TrustScore(BaseModel):
     """Trust score for a recipe with reasoning."""
+
     score: int = Field(..., ge=0, le=100, description="Trust score from 0-100")
     reasoning: str = Field(..., description="Explanation for the score")
 
 
 class Recipe(BaseModel):
     """A complete recipe extracted from search results."""
+
     id: int | None = None
     title: str
     description: str
