@@ -2,7 +2,7 @@
 
 > *Cooking, clarified.*
 
-AI-powered recipe extraction for the terminal. Paste a search query, get clean ingredients and steps. No ads, no life stories, no scrolling.
+AI-powered recipe extraction for the terminal. Type a search query, get clean ingredients and steps. No ads, no life stories, no scrolling.
 
 ## Install
 
@@ -25,15 +25,12 @@ You'll need API keys from two services (both have free tiers):
 1. **Gemini** (AI extraction): https://aistudio.google.com/apikey
 2. **Tavily** (recipe search): https://tavily.com
 
-Set them as environment variables:
-
-```bash
-export GEMINI_API_KEY=your-gemini-key
-export TAVILY_API_KEY=your-tavily-key
+Create a `.env` file in your working directory:
+```shell
+cp .env.example .env
 ```
 
-Or create a `.env` file in your working directory:
-
+Then use a text editor to update the file with your keys:
 ```
 GEMINI_API_KEY=your-gemini-key
 TAVILY_API_KEY=your-tavily-key
