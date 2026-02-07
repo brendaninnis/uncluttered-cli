@@ -1,5 +1,7 @@
 """Rich display utilities for the CLI."""
 
+import sys
+
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
@@ -33,10 +35,11 @@ def print_search_results(recipes: list[Recipe], title: str | None = None) -> Non
         header_style="bold cyan",
         show_lines=True,
     )
+    table.add_column("#", justify="right", width=3)
     table.add_column("Recipe", style="bold")
     table.add_column("Trust Score", justify="center", width=12)
 
-    for recipe in recipes:
+    for i, recipe in enumerate(recipes, 1):
         score = recipe.trust_score.score if recipe.trust_score else 0
         color = _score_color(score)
         score_display = f"[{color}]{score}/100[/{color}]"
@@ -45,7 +48,7 @@ def print_search_results(recipes: list[Recipe], title: str | None = None) -> Non
         # Title on first line, slug below in dim
         recipe_cell = f"{recipe.title}\n[dim]{slug}[/dim]"
 
-        table.add_row(recipe_cell, score_display)
+        table.add_row(str(i), recipe_cell, score_display)
 
     console.print(table)
 
@@ -114,3 +117,52 @@ _{recipe.description}_
         padding=(1, 2),
     )
     console.print(panel)
+
+
+def print_search_terms(terms: list[tuple[str, int]]) -> None:
+    """Render a numbered table of search terms with recipe counts."""
+    if not terms:
+        console.print("[dim]No saved recipes yet.[/dim]")
+        return
+
+    table = Table(
+        title="Search Terms",
+        show_header=True,
+        header_style="bold cyan",
+        show_lines=True,
+    )
+    table.add_column("#", justify="right", width=3)
+    table.add_column("Search Term", style="bold")
+    table.add_column("Recipes", justify="center", width=8)
+
+    for i, (term, count) in enumerate(terms, 1):
+        table.add_row(str(i), term, str(count))
+
+    console.print(table)
+
+
+def prompt_selection(count: int, label: str = "show") -> int | None:
+    """Prompt the user to select a numbered item. Returns 1-indexed int or None."""
+    if not sys.stdin.isatty():
+        return None
+
+    try:
+        raw = console.input(f"Enter # to {label} (or Enter to skip): ")
+    except EOFError:
+        return None
+
+    raw = raw.strip()
+    if not raw:
+        return None
+
+    try:
+        choice = int(raw)
+    except ValueError:
+        console.print("[yellow]Invalid input, skipping.[/yellow]")
+        return None
+
+    if choice < 1 or choice > count:
+        console.print(f"[yellow]Please enter a number between 1 and {count}.[/yellow]")
+        return None
+
+    return choice

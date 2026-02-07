@@ -4,10 +4,17 @@ from typing import Optional
 
 import typer
 
-from uncluttered.cli.display import console, print_search_results, print_recipe_detail
+from uncluttered.cli.display import (
+    console,
+    print_search_results,
+    print_recipe_detail,
+    print_search_terms,
+    prompt_selection,
+)
 from uncluttered.core.database import (
     get_recipe_by_slug,
     get_recipes_by_search_term,
+    get_search_term_counts,
     delete_recipe_by_slug,
     delete_recipes_by_search_term,
     delete_all_recipes,
@@ -38,12 +45,31 @@ def search(
     console.print(f"[green]Saved {len(recipes)} recipes for \"{query}\"[/green]\n")
     print_search_results(recipes, title=f"Top Results for \"{query}\"")
 
+    choice = prompt_selection(len(recipes))
+    if choice is not None:
+        print_recipe_detail(recipes[choice - 1])
+
 
 @app.command("list")
 def list_recipes(
-    search_term: str = typer.Argument(..., help="Search term to filter recipes"),
+    search_term: Optional[str] = typer.Argument(None, help="Search term to filter recipes"),
 ):
-    """List all saved recipes for a search term."""
+    """List saved recipes. Without arguments, shows all search terms."""
+    if search_term is None:
+        # Show all search terms
+        terms = get_search_term_counts()
+        print_search_terms(terms)
+
+        if not terms:
+            return
+
+        choice = prompt_selection(len(terms), label="list")
+        if choice is None:
+            return
+
+        # User picked a search term — show its recipes
+        search_term = terms[choice - 1][0]
+
     recipes = get_recipes_by_search_term(search_term)
 
     if not recipes:
@@ -52,6 +78,10 @@ def list_recipes(
         raise typer.Exit(0)
 
     print_search_results(recipes, title=f"Recipes for \"{search_term}\"")
+
+    choice = prompt_selection(len(recipes))
+    if choice is not None:
+        print_recipe_detail(recipes[choice - 1])
 
 
 @app.command()

@@ -56,7 +56,7 @@ def process_query(
 
             # Add metadata
             recipe.slug = unique_slug
-            recipe.search_term = query
+            recipe.search_term = query.lower()
             recipe.source_url = result.url
 
             # Save to database

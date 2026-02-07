@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from sqlalchemy import create_engine, Column, Integer, String, Text
+from sqlalchemy import create_engine, Column, Integer, String, Text, func
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from .models import Recipe, Ingredient, TrustScore
@@ -114,10 +114,10 @@ def get_recipe_by_slug(slug: str) -> Recipe | None:
 
 
 def get_recipes_by_search_term(search_term: str) -> list[Recipe]:
-    """Retrieve all recipes for a given search term."""
+    """Retrieve all recipes for a given search term (case-insensitive)."""
     with SessionLocal() as session:
         rows = session.query(RecipeTable).filter(
-            RecipeTable.search_term == search_term
+            func.lower(RecipeTable.search_term) == search_term.lower()
         ).order_by(RecipeTable.trust_score.desc()).all()
         return [_row_to_recipe(row) for row in rows]
 
@@ -127,6 +127,18 @@ def get_all_search_terms() -> list[str]:
     with SessionLocal() as session:
         rows = session.query(RecipeTable.search_term).distinct().all()
         return [row[0] for row in rows if row[0] is not None]
+
+
+def get_search_term_counts() -> list[tuple[str, int]]:
+    """Get all search terms with recipe counts."""
+    with SessionLocal() as session:
+        rows = session.query(
+            RecipeTable.search_term,
+            func.count(RecipeTable.id),
+        ).filter(
+            RecipeTable.search_term.isnot(None)
+        ).group_by(RecipeTable.search_term).all()
+        return [(row[0], row[1]) for row in rows]
 
 
 def get_all_slugs() -> set[str]:
@@ -145,10 +157,10 @@ def delete_recipe_by_slug(slug: str) -> bool:
 
 
 def delete_recipes_by_search_term(search_term: str) -> int:
-    """Delete all recipes for a search term. Returns count of deleted recipes."""
+    """Delete all recipes for a search term (case-insensitive). Returns count of deleted recipes."""
     with SessionLocal() as session:
         result = session.query(RecipeTable).filter(
-            RecipeTable.search_term == search_term
+            func.lower(RecipeTable.search_term) == search_term.lower()
         ).delete()
         session.commit()
         return result
