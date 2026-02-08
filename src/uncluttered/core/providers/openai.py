@@ -1,5 +1,6 @@
 """OpenAI recipe provider."""
 
+import logging
 import os
 
 from openai import OpenAI, RateLimitError
@@ -8,13 +9,16 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 from ..models import Recipe
 from .base import RecipeProvider
 
+logger = logging.getLogger(__name__)
+
 
 def _log_retry(retry_state):
-    """Log retry attempts to the console."""
+    """Log retry attempts."""
     sleep_time = retry_state.next_action.sleep
-    print(
-        f"  OpenAI is busy. Retrying in {sleep_time:.1f}s... "
-        f"(attempt {retry_state.attempt_number}/10)"
+    logger.info(
+        "OpenAI rate limited. Retrying in %.1fs (attempt %d/10)",
+        sleep_time,
+        retry_state.attempt_number,
     )
 
 

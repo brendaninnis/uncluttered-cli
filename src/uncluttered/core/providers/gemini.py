@@ -1,5 +1,6 @@
 """Google Gemini recipe provider."""
 
+import logging
 import os
 
 from google import genai
@@ -9,6 +10,8 @@ from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponen
 
 from ..models import Recipe
 from .base import RecipeProvider
+
+logger = logging.getLogger(__name__)
 
 
 def _is_resource_exhausted(exception: BaseException) -> bool:
@@ -22,11 +25,12 @@ def _is_resource_exhausted(exception: BaseException) -> bool:
 
 
 def _log_retry(retry_state):
-    """Log retry attempts to the console."""
+    """Log retry attempts."""
     sleep_time = retry_state.next_action.sleep
-    print(
-        f"  Gemini is busy. Retrying in {sleep_time:.1f}s... "
-        f"(attempt {retry_state.attempt_number}/10)"
+    logger.info(
+        "Gemini rate limited. Retrying in %.1fs (attempt %d/10)",
+        sleep_time,
+        retry_state.attempt_number,
     )
 
 
