@@ -1,5 +1,8 @@
 # Uncluttered
 
+[![CI](https://github.com/brendaninnis/uncluttered-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/brendaninnis/uncluttered-cli/actions/workflows/ci.yml)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
+
 > *Cooking, clarified.*
 
 AI-powered recipe extraction for the terminal. Type a search query, get clean ingredients and steps. No ads, no life stories, no scrolling.
