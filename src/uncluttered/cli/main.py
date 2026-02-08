@@ -16,6 +16,7 @@ from uncluttered.cli.display import (  # noqa: E402
     prompt_selection,
 )
 from uncluttered.core.database import (  # noqa: E402
+    create_tables,
     delete_all_recipes,
     delete_recipe_by_slug,
     delete_recipes_by_search_term,
@@ -30,6 +31,12 @@ app = typer.Typer(
     help="AI-powered recipe search and extraction. Cooking, clarified.",
     add_completion=False,
 )
+
+
+@app.callback()
+def startup():
+    """Ensure database tables exist before any command runs."""
+    create_tables()
 
 
 @app.command()
