@@ -16,17 +16,19 @@ Extract the following information:
 
 ## Trust Score
 
-Assign a Trust Score (0-100) reflecting how much you'd trust this recipe to produce a good
-result if followed by a competent home cook. Use your judgment — assess the recipe holistically
-rather than checking boxes.
+Assign a Trust Score (0-100) based on the **source material** you are reading, not your
+extracted output. Your extraction cleans up formatting, but the trust score should reflect
+the quality of the original recipe as written by its author.
+
+Use your judgment — assess the source holistically rather than checking boxes.
 
 Things worth considering:
-- **Precision**: Are measurements specific and reproducible? Grams or exact cup amounts are
-  more trustworthy than "a handful" or "some".
-- **Completeness**: Are the instructions detailed enough to follow without guessing? Look for
-  temperatures, timing cues, and technique.
+- **Precision**: Does the source use specific, reproducible measurements? Grams or exact cup
+  amounts are more trustworthy than "a handful" or "some".
+- **Completeness**: Are the original instructions detailed enough to follow without guessing?
+  Look for temperatures, timing cues, and technique explanations.
 - **Credibility**: Does the source seem knowledgeable? Do the techniques and ratios make
-  culinary sense for this type of dish?
+  culinary sense for this type of dish? Is it from a reputable cooking site or a tested recipe?
 
 Search metadata (source URL, search rank, relevance score) is provided for context. A high
 search rank or well-known source may be a positive signal, but the recipe content itself
