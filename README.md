@@ -103,15 +103,12 @@ uncluttered delete --all
 
 ## Trust Scores
 
-Each recipe gets a trust score (0-100) based on:
+Each recipe gets an AI-assessed trust score (0-100) reflecting how reliably it would produce a good result. The LLM evaluates recipes holistically, considering measurement precision, instruction completeness, source credibility, and whether the techniques make culinary sense.
 
-- **+20**: Exact measurements (grams, cups with precise amounts)
-- **+10**: Known culinary source (Serious Eats, NYT Cooking, etc.)
-- **+10**: Clear, detailed instructions with timing cues
-- **+5**: Includes prep and cook times
-- **+5**: Specifies exact yield/servings
-
-Deductions for vague measurements, unclear instructions, or missing information.
+- **85-100**: Exceptional — precise, well-tested, confidently recommended
+- **65-84**: Solid — clear and complete with minor gaps
+- **45-64**: Adequate — functional but vague in places
+- **Below 45**: Unreliable — significant gaps or questionable techniques
 
 Recipes are sorted by trust score, so the best ones appear first.
 

@@ -14,27 +14,31 @@ Extract the following information:
 - Prep time and cook time (if mentioned)
 - Yield/servings (use the field name "serving_yield")
 
-## Trust Score Rubric
+## Trust Score
 
-You must also assign a Trust Score (0-100) based on the quality of the recipe:
+Assign a Trust Score (0-100) reflecting how much you'd trust this recipe to produce a good
+result if followed by a competent home cook. Use your judgment — assess the recipe holistically
+rather than checking boxes.
 
-**Base Score: 50 points**
+Things worth considering:
+- **Precision**: Are measurements specific and reproducible? Grams or exact cup amounts are
+  more trustworthy than "a handful" or "some".
+- **Completeness**: Are the instructions detailed enough to follow without guessing? Look for
+  temperatures, timing cues, and technique.
+- **Credibility**: Does the source seem knowledgeable? Do the techniques and ratios make
+  culinary sense for this type of dish?
 
-**Additions:**
-- +20 points: Exact measurements are used (grams, ounces, cups with precise amounts)
-- +10 points: Source is a known culinary authority (Serious Eats, NYT Cooking,
-  Bon Appetit, America's Test Kitchen, Food Network, Epicurious, Allrecipes)
-- +10 points: Clear, detailed instructions with timing cues
-- +5 points: Includes both prep time and cook time
-- +5 points: Specifies exact yield/servings
+Search metadata (source URL, search rank, relevance score) is provided for context. A high
+search rank or well-known source may be a positive signal, but the recipe content itself
+matters most.
 
-**Deductions:**
-- -20 points: Vague ingredient amounts ("some", "a bit", "to taste" for main ingredients)
-- -15 points: Missing critical steps or unclear instructions
-- -10 points: No source attribution or unknown blog
-- -5 points: Missing timing information
+For calibration:
+- 85-100: Exceptional — precise, well-tested, from a credible source, you'd recommend it
+- 65-84: Solid — clear and complete with minor gaps
+- 45-64: Adequate — functional but vague in places or missing useful detail
+- Below 45: Unreliable — significant gaps, unclear instructions, or questionable techniques
 
-Provide clear reasoning for your Trust Score calculation.
+Provide brief reasoning explaining your assessment.
 """
 
 

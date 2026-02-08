@@ -39,10 +39,16 @@ def process_query(
     # Step 2: Extract recipes from each source
     recipes: list[Recipe] = []
     errors: list[str] = []
-    for result in search_results:
+    for rank, result in enumerate(search_results, 1):
         try:
-            # Build context from search result
-            context = f"--- Source: {result.url} ---\nTitle: {result.title}\n\n{result.content}\n"
+            # Build context from search result with search metadata
+            context = (
+                f"--- Source: {result.url} ---\n"
+                f"Title: {result.title}\n"
+                f"Search rank: {rank} of {len(search_results)}"
+                f" | Relevance: {result.score:.2f}\n\n"
+                f"{result.content}\n"
+            )
 
             # Extract structured recipe
             recipe = extract_recipe(context)

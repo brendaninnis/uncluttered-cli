@@ -13,6 +13,7 @@ class SearchResult:
     url: str
     title: str
     content: str
+    score: float = 0.0
 
 
 def search_for_recipes(
@@ -54,11 +55,12 @@ def search_for_recipes(
         title = result.get("title", "Untitled")
         raw_content = result.get("raw_content", "")
         content = result.get("content", "")
+        relevance = result.get("score", 0.0)
 
         # Prefer raw_content if available
         text = raw_content if raw_content else content
 
         if text and url and url not in excluded:
-            results.append(SearchResult(url=url, title=title, content=text))
+            results.append(SearchResult(url=url, title=title, content=text, score=relevance))
 
     return results[:num_results]
