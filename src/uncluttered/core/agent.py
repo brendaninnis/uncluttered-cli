@@ -6,19 +6,15 @@ from .providers import get_provider
 SYSTEM_PROMPT = """You are a recipe extraction expert. Your job is to extract a complete,
 well-structured recipe from the provided context.
 
-The source content is raw text from a web page and may be noisy — recipe content can be
-mixed with ads, navigation, comments, and other unrelated text. Read through the entire
-source carefully to find all recipe components.
+The source content is raw text from a web page and may be noisy — recipe content can be mixed with ads, navigation, comments and other unrelated text. Read through the entire source carefully to find all recipe components.
 
 Extract the following information:
 - Title: The name of the dish
-- Description: A brief 1-2 sentence description
-- Ingredients: Every ingredient listed in the recipe, each with quantity, unit, and name.
-  Preserve fractional amounts (e.g. "1/2") and ranges (e.g. "2-3"). Do not skip ingredients.
-  When the source offers a substitution or alternative (e.g. "butter or oil"), keep it as a
-  single ingredient entry with the alternative in the name (e.g. "butter (or oil)").
-- Instructions: Every step of the recipe in order. Scan the full source to ensure no steps
-  are missed — they may be separated by non-recipe content on the page.
+- Description: Write a brief 1-2 sentence description of the dish in your own words. Do not
+  copy the description verbatim from the source — summarize or rephrase it.
+- Ingredients: Each ingredient with quantity, unit, and name. Standardize units to common
+  abbreviations (e.g. "teaspoons" → "tsp", "tablespoons" → "tbsp", "ounces" → "oz", "pounds" → "lb", "grams" → "g", "kilograms" → "kg", "milliliters" → "ml", "liters" → "L"). Use the full word only when no standard abbreviation exists.
+- Instructions: Step-by-step cooking instructions
 - Prep time and cook time (if mentioned)
 - Yield/servings (use the field name "serving_yield")
 
