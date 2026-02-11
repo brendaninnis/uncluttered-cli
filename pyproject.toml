@@ -53,3 +53,6 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/uncluttered/core/agent.py" = ["E501"]
