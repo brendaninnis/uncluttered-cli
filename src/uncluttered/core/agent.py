@@ -13,10 +13,16 @@ Extract the following information:
 - Description: Write a brief 1-2 sentence description of the dish in your own words. Do not
   copy the description verbatim from the source — summarize or rephrase it.
 - Ingredients: Each ingredient with quantity, unit, and name. Standardize units to common
-  abbreviations (e.g. "teaspoons" → "tsp", "tablespoons" → "tbsp", "pounds" → "lb", "grams" → "g"). Use the full word only when no standard abbreviation exists. When the source offers a substitution or alternative (e.g. "butter or oil"), keep it as a single ingredient entry with the alternative in the name (e.g. butter (or oil)").
+  abbreviations (e.g. "teaspoons" → "tsp", "tablespoons" → "tbsp", "pounds" → "lb", "grams" → "g"). Use the full word only when no standard abbreviation exists. When the source offers a substitution or alternative (e.g. "butter or oil"), keep it as a single ingredient entry with the alternative in the name (e.g. butter (or oil)"). When no specific quantity is given (e.g. "oil for frying", "salt and pepper to taste"), use an empty string "" for the quantity field — never use "0".
 - Instructions: Every step of the recipe in order. Scan the full source to ensure no steps are missed — they may be separated by non-recipe content on the page.
-- Prep time and cook time (if mentioned)
-- Yield/servings (use the field name "serving_yield")
+- Prep time and cook time (if mentioned). Normalize time values to a consistent short
+  format: use "mins" for minutes (e.g. "30 minutes" → "30 mins", "30 min" → "30 mins",
+  "30" → "30 mins") and "hrs" / "hr" for hours (e.g. "2 hours" → "2 hrs",
+  "1 hour 30 minutes" → "1 hr 30 mins"). Always include the unit — never leave a bare number.
+- Yield/servings (use the field name "serving_yield"). For simple serving counts, normalize
+  to the format "N servings" (e.g. "4" → "4 servings", "Serves 6" → "6 servings",
+  "4 Servings" → "4 servings"). Keep descriptive yields as-is when they add meaningful
+  detail (e.g. "6 cups (2-3 servings)", "24 cookies", "2 loaves").
 
 ## Trust Score
 

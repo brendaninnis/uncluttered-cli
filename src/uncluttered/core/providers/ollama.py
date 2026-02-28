@@ -5,7 +5,7 @@ import logging
 import os
 
 from openai import APIConnectionError, OpenAI
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter
 
 from ..models import Recipe
 from .base import RecipeProvider
@@ -44,7 +44,7 @@ class OllamaProvider(RecipeProvider):
 
     @retry(
         retry=retry_if_exception_type(APIConnectionError),
-        wait=wait_exponential(multiplier=2, min=2, max=60),
+        wait=wait_exponential_jitter(initial=2, max=60, jitter=5),
         stop=stop_after_attempt(10),
         before_sleep=_log_retry,
     )

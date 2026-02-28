@@ -6,7 +6,7 @@ import os
 from google import genai
 from google.genai import types
 from google.genai.errors import ClientError
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential_jitter
 
 from ..models import Recipe
 from .base import RecipeProvider
@@ -51,15 +51,16 @@ class GeminiProvider(RecipeProvider):
 
     @retry(
         retry=retry_if_exception(_is_resource_exhausted),
-        wait=wait_exponential(multiplier=2, min=2, max=60),
+        wait=wait_exponential_jitter(initial=2, max=60, jitter=5),
         stop=stop_after_attempt(10),
         before_sleep=_log_retry,
     )
     def extract_recipe(self, system_prompt: str, context: str) -> Recipe:
         response = self._client.models.generate_content(
             model=self._model,
-            contents=f"{system_prompt}\n\n{context}",
+            contents=context,
             config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
                 response_mime_type="application/json",
                 response_schema=Recipe,
             ),
